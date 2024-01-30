@@ -140,7 +140,7 @@ def prony_inspect_data(data, thres=None, N_keep=None):
         N = min(N_keep, N_rank)  # Number of singular values to keep, given from rank of Hankel matrix or from input
         # Update the thresold from highest non keeped singular value
         thres = s_svd[N]
-    N = min(N, n)  # Limit the number of vector
+    N = min(N, n)  # Limit the number of vector:
     # Keep only the N highest singular value
     print("Prony: Singular values. Value lower than thres are considered zero.")
     print(s_svd[:N])
@@ -154,10 +154,10 @@ def prony_fit_times_serie(data, dt, thres=None, N_keep=None, remove=True):
     Fit one time series.
     Parameters
     ----------
-    times: numpy array
-        The time component of the data
-    kernel: numpy array
-        The kernel to be fitted
+     data: numpy array, 1 dimmentional
+        the data series to be fitted.
+       dt: float
+       time step of the dataset.
     thres: float, default=None
         A threshold that determined the numerical zero in the filetring of the data.
         If None, it is set to the value of precision of the float on the machine.
@@ -166,8 +166,6 @@ def prony_fit_times_serie(data, dt, thres=None, N_keep=None, remove=True):
         If None, it is determined from the threshold.
     remove: bool, default=True
         If true, remove diverging exponentials.
-    debug: bool, default=False
-        A flag indicating to output as well the filtered data.
     """
     # print("Start", data.shape, dt)
     J, _ = get_jacobi_matrix_reduced(data / data[0], thres=thres, N_keep=N_keep)
