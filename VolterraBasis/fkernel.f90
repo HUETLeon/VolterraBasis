@@ -31,6 +31,20 @@ end function inv
 end module lapackMod
 
 
+subroutine discrete_sum(res,n,B,kernel,dim_basis)
+  implicit none
+  integer,intent(in)::n,dim_basis
+  double precision,dimension(dim_basis, dim_basis,0:n),intent(in)::B
+  double precision,dimension(0:n,dim_basis,dim_basis),intent(in)::kernel
+  double precision,dimension(dim_basis,dim_basis),intent(out)::res
+  integer::j
+  res=0.
+  do j=0,n
+     res=res+matmul(B(:,:,n-j),kernel(j,:,:))
+  end do
+end subroutine discrete_sum
+
+
 subroutine rect_integral(res,dt,n,B,kernel,dim_basis,dim_x,dim_out)
   implicit none
   integer,intent(in)::n,dim_basis,dim_x,dim_out
@@ -103,6 +117,31 @@ subroutine simpson_integral(res,dt,n,B,kernel,dim_basis,dim_x,dim_out)
   res=res+4*h*matmul(B(:,:,1),kernel(n-1,:,:))
   !write(*,*) '--'
 end subroutine simpson_integral
+
+
+
+subroutine kernel_discrete(lenTraj, dim_basis, kernel,  B)
+  use lapackMod
+  implicit none
+  integer,intent(in)::lenTraj,dim_basis
+  double precision,dimension(0:lenTraj,dim_basis,dim_basis),intent(out)::kernel
+  double precision,dimension(dim_basis, dim_basis,0:lenTraj),intent(in)::B
+  double precision,dimension(dim_basis,dim_basis)::invB0
+  double precision,dimension(dim_basis,dim_basis)::num
+  integer::i
+
+  invB0=inv(B(:,:,0)) ! Update this depending of integration rule
+
+  kernel(0,:,:)=-1*matmul(invB0,B(:,:,1))
+
+  do i=1,lenTraj-1 !! for i in range(1, lenTraj):
+     call discrete_sum(num,i-1,B(:,:,0:(i-1)),kernel(0:(i-1),:,:),dim_basis)
+     ! call rect_integral(num,1.0,i,B(:,:,1:i+1),kernel(0:i,:,:),dim_basis,dim_x,dim_basis)
+     kernel(i,:,:)=-1*matmul(invB0,num+B(:,:,i+1))
+  end do
+
+
+end subroutine kernel_discrete
 
 
 subroutine kernel_first_kind_rect(lenTraj, dim_basis, dim_x, kernel,  B, DxB,dt)
