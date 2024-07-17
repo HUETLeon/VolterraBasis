@@ -39,7 +39,7 @@ subroutine discrete_sum(res,n,B,kernel,dim_basis)
   double precision,dimension(dim_basis,dim_basis),intent(out)::res
   integer::j
   res=0.
-  do j=0,n
+  do j=0,n-1
      res=res+matmul(B(:,:,n-j),kernel(j,:,:))
   end do
 end subroutine discrete_sum
@@ -124,7 +124,7 @@ subroutine kernel_discrete(lenTraj, dim_basis, kernel,  B)
   use lapackMod
   implicit none
   integer,intent(in)::lenTraj,dim_basis
-  double precision,dimension(0:lenTraj,dim_basis,dim_basis),intent(out)::kernel
+  double precision,dimension(0:lenTraj-1,dim_basis,dim_basis),intent(out)::kernel
   double precision,dimension(dim_basis, dim_basis,0:lenTraj),intent(in)::B
   double precision,dimension(dim_basis,dim_basis)::invB0
   double precision,dimension(dim_basis,dim_basis)::num
@@ -135,7 +135,7 @@ subroutine kernel_discrete(lenTraj, dim_basis, kernel,  B)
   kernel(0,:,:)=-1*matmul(invB0,B(:,:,1))
 
   do i=1,lenTraj-1 !! for i in range(1, lenTraj):
-     call discrete_sum(num,i-1,B(:,:,0:(i-1)),kernel(0:(i-1),:,:),dim_basis)
+     call discrete_sum(num,i,B(:,:,0:i),kernel(0:i,:,:),dim_basis)
      ! call rect_integral(num,1.0,i,B(:,:,1:i+1),kernel(0:i,:,:),dim_basis,dim_x,dim_basis)
      kernel(i,:,:)=-1*matmul(invB0,num+B(:,:,i+1))
   end do
